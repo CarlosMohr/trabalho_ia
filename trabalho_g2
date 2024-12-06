@@ -1,0 +1,85 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+import numpy as np
+
+data = {
+    'ID': range(1, 21),  
+    'Team': [
+        'São Paulo', 'Atlético Mineiro', 'Grêmio', 'Palmeiras', 'Santos FC', 
+        'SC Internacional', 'Cruzeiro', 'Fluminense FC', 'SC Corinthians', 'Vasco da Gama', 
+        'Botafogo', 'CR Flamengo', 'EC Bahia', 'Portuguesa', 'Atlético Goianiense', 
+        'Coritiba', 'Figueirense', 'Náutico', 'Sport Recife', 'Ponte Preta'
+    ],
+    'Ovr': [73, 72, 72, 72, 72, 72, 71, 71, 71, 71, 70, 70, 70, 70, 69, 69, 69, 69, 69, 68],
+    'Def': [74, 74, 73, 74, 74, 75, 74, 73, 75, 72, 72, 71, 72, 72, 69, 72, 70, 72, 70, 70],
+    'Mid': [72, 70, 75, 69, 69, 70, 70, 71, 70, 69, 70, 69, 66, 68, 70, 68, 68, 68, 67, 67],
+    'Fwd': [77, 75, 76, 76, 76, 75, 68, 68, 68, 67, 66, 66, 66, 66, 66, 65, 66, 66, 64, 64],
+    'Phy': [77, 76, 76, 77, 77, 77, 77, 77, 77, 76, 76, 76, 75, 76, 75, 75, 76, 76, 75, 75],
+    'Spd': [76, 75, 76, 76, 76, 76, 76, 76, 76, 76, 76, 78, 76, 76, 76, 76, 75, 76, 76, 76]
+}
+
+df = pd.DataFrame(data)
+
+def predict_match_result(team1, team2, model, df):
+    # Obtém as estatísticas dos dois times com base no nome
+    team1_stats = df[df['Team'] == team1].iloc[0]
+    team2_stats = df[df['Team'] == team2].iloc[0]
+    
+    # Soma os valores de todos os atributos para ambos os times
+    team1_score = int(team1_stats[['Ovr', 'Def', 'Mid', 'Fwd', 'Phy', 'Spd']].sum() / 6)
+    team2_score = int(team2_stats[['Ovr', 'Def', 'Mid', 'Fwd', 'Phy', 'Spd']].sum() / 6)
+
+    
+    print(f"Pontuação média do {team1}: {team1_score}")
+    print(f"Pontuação média do {team2}: {team2_score}")
+    
+    # Determina o resultado com base nas somas
+    if team1_score > team2_score:
+        return f"Vitória do {team1}"
+    elif team1_score < team2_score:
+        return f"Vitória do {team2}"
+    else:
+        return "Empate"
+
+def main_menu():
+    print("Bem-vindo ao sistema de previsão de partidas PES 2013!")
+    while True:
+        print("\nEscolha uma das opções abaixo:")
+        print("1 - Ver lista de clubes")
+        print("2 - Prever o resultado de uma partida")
+        print("3 - Sair")
+        option = input("Digite o número da opção desejada: ")
+
+        if option == '1':
+            print("\nLista de clubes disponíveis:")
+            for idx, row in df.iterrows():
+                print(f"{row['ID']} - {row['Team']}")
+
+        elif option == '2':
+            print("\nEscolha os clubes para a partida.")
+            try:
+                team1_id = int(input("Digite o ID do primeiro clube: "))
+                team2_id = int(input("Digite o ID do segundo clube: "))
+                
+                if team1_id not in df['ID'].values or team2_id not in df['ID'].values:
+                    print("Um ou ambos os IDs não são válidos. Tente novamente.")
+                elif team1_id == team2_id:
+                    print("Os times escolhidos são os mesmos! Escolha times diferentes.")
+                else:
+                    team1 = df[df['ID'] == team1_id]['Team'].values[0]
+                    team2 = df[df['ID'] == team2_id]['Team'].values[0]
+                    result = predict_match_result(team1, team2, None, df)  # Passe o modelo adequado aqui
+                    print(f"\nPrevisão para a partida entre {team1} e {team2}: {result}")
+            except ValueError:
+                print("Por favor, digite apenas números para os IDs.")
+
+        elif option == '3':
+            print("Encerrando o sistema. Até logo!")
+            break
+
+        else:
+            print("Opção inválida. Tente novamente.")
+
+main_menu()
